@@ -1,306 +1,141 @@
-# API REST Reactiva - Gestión de Franquicias
+# README
 
-## 📋 Descripción
+## 📌 Descripción
 
-API RESTful reactiva para gestionar franquicias, sucursales y productos utilizando **Arquitectura Hexagonal** (Ports & Adapters), **Spring Boot WebFlux** y **R2DBC** para MySQL.
+API REST reactiva para gestionar **franquicias**, **sucursales** y **productos**, construida con **Spring Boot WebFlux** y persistencia reactiva con **R2DBC (MySQL)**. El código sigue **Arquitectura Hexagonal (Ports & Adapters)** para mantener el dominio desacoplado de frameworks y detalles de infraestructura.
 
-## 🏗️ Arquitectura Hexagonal
+---
 
-El proyecto sigue la arquitectura hexagonal con las siguientes capas:
+## 🧭 Contenido
 
-```
-├── domain/                          # Capa de Dominio (Núcleo)
-│   ├── model/                       # Entidades de negocio
-│   │   ├── Franquicia.java
-│   │   ├── Sucursal.java
-│   │   └── Producto.java
-│   ├── dto/                         # DTOs de entrada/salida
-│   │   ├── FranquiciaRequest/Response
-│   │   ├── SucursalRequest/Response
-│   │   ├── ProductoRequest/Response
-│   │   ├── ActualizarStockRequest
-│   │   └── ProductoMaxStockResponse
-│   ├── port/                        # Puertos (Interfaces)
-│   │   └── out/                     # Puertos de salida
-│   │       ├── FranquiciaRepositoryPort
-│   │       ├── SucursalRepositoryPort
-│   │       └── ProductoRepositoryPort
-│   └── exception/                   # Excepciones de dominio
-│       ├── ResourceNotFoundException
-│       └── BusinessValidationException
-│
-├── application/                     # Capa de Aplicación
-│   └── usecase/                     # Casos de uso
-│       ├── CrearFranquiciaUseCase
-│       ├── AgregarSucursalUseCase
-│       ├── AgregarProductoUseCase
-│       ├── EliminarProductoUseCase
-│       ├── ModificarStockProductoUseCase
-│       └── ObtenerProductoMaxStockPorSucursalUseCase
-│
-└── infrastructure/                  # Capa de Infraestructura (Adaptadores)
-    ├── adapter/
-    │   ├── in/                      # Adaptadores de entrada
-    │   │   └── rest/                # Controllers REST
-    │   │       ├── FranquiciaController
-    │   │       ├── SucursalController
-    │   │       ├── ProductoController
-    │   │       └── exception/       # Manejo global de errores
-    │   │           ├── ErrorResponse
-    │   │           └── GlobalExceptionHandler
-    │   └── out/                     # Adaptadores de salida
-    │       └── persistence/         # Persistencia R2DBC
-    │           ├── entity/          # Entidades R2DBC
-    │           ├── repository/      # Repositorios Spring Data
-    │           ├── mapper/          # Mappers Entity <-> Domain
-    │           └── *RepositoryAdapter # Implementación de puertos
-    └── config/                      # Configuración
-        └── R2dbcConfig
-```
+- [Características](#-características)
+- [Tecnologías](#-tecnologías)
+- [Arquitectura y consideraciones de diseño](#-arquitectura-y-consideraciones-de-diseño)
+- [Requisitos](#-requisitos)
+- [Configuración](#-configuración)
+- [Ejecución en local](#-ejecución-en-local)
+  - [Opción A: Docker Compose (recomendado)](#opción-a-docker-compose-recomendado)
+  - [Opción B: Local (Java + MySQL)](#opción-b-local-java--mysql)
+- [Endpoints](#-endpoints)
+- [Pruebas y cobertura](#-pruebas-y-cobertura)
+- [Solución de problemas](#-solución-de-problemas)
+
+---
+
+## ✅ Características
+
+- CRUD básico para Franquicias / Sucursales / Productos.
+- Modificación parcial (PATCH) para **stock** y **nombre**.
+- Consulta: **producto con mayor stock por sucursal** para una franquicia.
+- Manejo de errores consistente (404/400/500).
+- Validación con Jakarta Validation.
+
+---
 
 ## 🚀 Tecnologías
 
-- **Java 17**
-- **Spring Boot 4.0.2**
-- **Spring WebFlux** (Programación reactiva)
-- **R2DBC** (Reactive Relational Database Connectivity)
-- **MySQL** (Base de datos)
-- **Lombok** (Reducción de boilerplate)
-- **SLF4J + Logback** (Logging)
-- **Jakarta Validation** (Validación de DTOs)
-- **Maven** (Gestión de dependencias)
+- Java 17+
+- Spring Boot (WebFlux)
+- Spring Data R2DBC
+- MySQL
+- Maven
+- Lombok
+- JUnit 5, Mockito, Reactor Test
+- JaCoCo
 
-## 📡 Endpoints RESTful
+---
 
-### 1. Crear Franquicia
-```http
-POST /api/v1/franquicias
-Content-Type: application/json
+## 🏗️ Arquitectura y consideraciones de diseño
 
-{
-  "nombre": "Franquicia ABC"
-}
+### Estructura del proyecto (detalle)
+
+> Vista orientativa (los nombres pueden variar ligeramente según el paquete), pensada para ubicar rápidamente dónde vive cada responsabilidad.
+
+```text
+src/
+├─ main/
+│  ├─ java/
+│  │  └─ com/prueba/seti/api_test/
+│  │     ├─ ApiTestApplication.java
+│  │     │
+│  │     ├─ domain/                              # Núcleo: reglas/contratos (sin infraestructura)
+│  │     │  ├─ model/                            # Entidades de negocio (Franquicia, Sucursal, Producto)
+│  │     │  ├─ dto/                              # DTOs de entrada/salida (Request/Response)
+│  │     │  ├─ exception/                        # Excepciones de dominio (404/validación negocio)
+│  │     │  └─ port/
+│  │     │     └─ out/                           # Puertos de salida (interfaces) hacia persistencia
+│  │     │
+│  │     ├─ application/
+│  │     │  └─ usecase/                          # Casos de uso (orquestan dominio + puertos)
+│  │     │
+│  │     └─ infrastructure/
+│  │        ├─ adapter/
+│  │        │  ├─ in/
+│  │        │  │  └─ rest/                        # Controllers WebFlux + validación @Valid
+│  │        │  │     └─ exception/                # DTO/Advice para errores HTTP (GlobalExceptionHandler)
+│  │        │  └─ out/
+│  │        │     └─ persistence/                 # Implementación de puertos (MySQL/R2DBC)
+│  │        │        ├─ entity/                   # Entidades R2DBC (@Table)
+│  │        │        ├─ repository/               # Repos Spring Data R2DBC (ReactiveCrudRepository)
+│  │        │        ├─ mapper/                   # Mappers Entity <-> Domain
+│  │        │        └─ *RepositoryAdapter.java   # Adapters que implementan los ports
+│  │        └─ config/                            # Configuración técnica (R2dbcConfig, init scripts)
+│  │
+│  └─ resources/
+│     ├─ application.properties                   # Config (puerto, R2DBC, init SQL)
+│     └─ schema.sql                               # DDL (tablas/índices) ejecutado al iniciar
+│
+└─ test/
+   └─ java/
+      └─ com/prueba/seti/api_test/                # Pruebas unitarias (use cases) y de controlador (WebFluxTest)
 ```
 
-**Respuesta (201 CREATED):**
-```json
-{
-  "id": 1,
-  "nombre": "Franquicia ABC"
-}
+### Arquitectura Hexagonal (Ports & Adapters)
+
+```
+┌─────────────────────────────┐
+│         REST (in)           │  Controllers
+└──────────────┬──────────────┘
+               │
+┌──────────────▼──────────────┐
+│        Application          │  Use cases (orquestación)
+└──────────────┬──────────────┘
+               │  Ports (interfaces)
+┌──────────────▼──────────────┐
+│           Domain            │  Model + reglas + excepciones
+└──────────────┬──────────────┘
+               │
+┌──────────────▼──────────────┐
+│      Persistence (out)      │  Adapters + R2DBC repositories
+└─────────────────────────────┘
 ```
 
-### 2. Agregar Sucursal
-```http
-POST /api/v1/sucursales
-Content-Type: application/json
+**Por qué esta arquitectura:**
+- Facilita pruebas (casos de uso se testean mockeando puertos).
+- Permite cambiar la persistencia (MySQL/R2DBC) sin tocar el dominio.
+- Mantiene los controladores delgados: solo validan/transportan datos.
 
-{
-  "nombre": "Sucursal Centro",
-  "franquiciaId": 1
-}
-```
+### Por qué WebFlux + R2DBC
+- WebFlux es no bloqueante; R2DBC permite mantener el flujo reactivo hasta la BD.
+- Evita JPA/Hibernate por su naturaleza principalmente bloqueante.
 
-**Respuesta (201 CREATED):**
-```json
-{
-  "id": 1,
-  "nombre": "Sucursal Centro",
-  "franquiciaId": 1
-}
-```
+### Inicialización de BD
+- `create-database.sql`: crea el **schema/base de datos** (ej. `franquicia`).
+- `schema.sql`: crea las **tablas** al iniciar la app (por `spring.sql.init.*`).
 
-### 3. Agregar Producto
-```http
-POST /api/v1/productos
-Content-Type: application/json
+---
 
-{
-  "nombre": "Producto A",
-  "stock": 100,
-  "sucursalId": 1
-}
-```
+## 📦 Requisitos
 
-**Respuesta (201 CREATED):**
-```json
-{
-  "id": 1,
-  "nombre": "Producto A",
-  "stock": 100,
-  "sucursalId": 1
-}
-```
+- Java 17+ (se recomienda Java 21 si lo tienes instalado)
+- Docker Desktop (recomendado para ejecución con Compose)
+- Maven (o usar `mvnw` / `mvnw.cmd`)
 
-### 4. Eliminar Producto
-```http
-DELETE /api/v1/productos/{id}
-```
-
-**Respuesta (204 NO CONTENT)**
-
-### 5. Modificar Stock
-```http
-PATCH /api/v1/productos/{id}/stock
-Content-Type: application/json
-
-{
-  "nuevoStock": 150
-}
-```
-
-**Respuesta (200 OK):**
-```json
-{
-  "id": 1,
-  "nombre": "Producto A",
-  "stock": 150,
-  "sucursalId": 1
-}
-```
-
-### 6. Productos con Mayor Stock por Franquicia
-```http
-GET /api/v1/productos/max-stock/franquicia/{franquiciaId}
-```
-
-**Respuesta (200 OK):**
-```json
-[
-  {
-    "productoId": 1,
-    "nombreProducto": "Producto A",
-    "stock": 150,
-    "sucursalId": 1,
-    "nombreSucursal": "Sucursal Centro"
-  },
-  {
-    "productoId": 5,
-    "nombreProducto": "Producto B",
-    "stock": 200,
-    "sucursalId": 2,
-    "nombreSucursal": "Sucursal Norte"
-  }
-]
-```
-
-### 7. Actualizar nombre de Franquicia
-```http
-PATCH /api/v1/franquicias/{id}
-Content-Type: application/json
-
-{
-  "nombre": "Franquicia Actualizada"
-}
-```
-
-**Respuesta (200 OK):**
-```json
-{
-  "id": 1,
-  "nombre": "Franquicia Actualizada"
-}
-```
-
-### 8. Actualizar nombre de Sucursal
-```http
-PATCH /api/v1/sucursales/{id}
-Content-Type: application/json
-
-{
-  "nombre": "Sucursal Actualizada"
-}
-```
-
-**Respuesta (200 OK):**
-```json
-{
-  "id": 1,
-  "nombre": "Sucursal Actualizada",
-  "franquiciaId": 1
-}
-```
-
-### 9. Actualizar nombre de Producto
-```http
-PATCH /api/v1/productos/{id}
-Content-Type: application/json
-
-{
-  "nombre": "Producto Actualizado"
-}
-```
-
-**Respuesta (200 OK):**
-```json
-{
-  "id": 1,
-  "nombre": "Producto Actualizado",
-  "stock": 150,
-  "sucursalId": 1
-}
-```
-
-## 🔄 Flujo Reactivo
-
-El código utiliza **operadores reactivos** de Project Reactor:
-
-- **`map`**: Transformación de datos
-- **`flatMap`**: Operaciones asíncronas con aplanamiento
-- **`switchIfEmpty`**: Manejo de valores vacíos
-- **`doOnNext`**: Efectos secundarios (logging)
-- **`doOnError`**: Manejo de errores
-- **`doOnSuccess`**: Acciones al completar exitosamente
-- **`doOnComplete`**: Acciones al terminar el flujo
-
-### Ejemplo de flujo reactivo:
-```java
-return sucursalRepository.existsById(request.getSucursalId())
-    .flatMap(exists -> {
-        if (!exists) {
-            return Mono.error(new ResourceNotFoundException("Sucursal", request.getSucursalId()));
-        }
-        return Mono.just(exists);
-    })
-    .flatMap(valid -> Mono.just(request)
-        .map(req -> Producto.builder()
-            .nombre(req.getNombre())
-            .stock(req.getStock())
-            .sucursalId(req.getSucursalId())
-            .build()))
-    .flatMap(productoRepository::save)
-    .map(this::toResponse);
-```
-
-## ✅ Validaciones
-
-- Validación de campos con `@Valid` y Jakarta Validation
-- Stock no puede ser negativo (`@Min(0)`)
-- Verificación de existencia de entidades relacionadas antes de operaciones
-- Manejo de errores con excepciones personalizadas
-
-## 📊 Modelo de Datos
-
-```sql
-franquicias
-├── id (PK)
-└── nombre
-
-sucursales
-├── id (PK)
-├── nombre
-└── franquicia_id (FK → franquicias.id)
-
-productos
-├── id (PK)
-├── nombre
-├── stock
-└── sucursal_id (FK → sucursales.id)
-```
+---
 
 ## 🔧 Configuración
 
-### Variables de entorno
+La app usa variables de entorno (con valores por defecto):
 
 ```text
 MY_API_DB_HOST=localhost
@@ -311,119 +146,209 @@ MY_API_DB_PASSWORD=1234
 MY_API_PORT=8082
 ```
 
-### application.properties
+En `src/main/resources/application.properties` se usan así:
 
 ```properties
-spring.application.name=api_test
 spring.r2dbc.url=r2dbc:mysql://${MY_API_DB_HOST:localhost}:${MY_API_DB_PORT:3306}/${MY_API_DB_NAME:franquicia}?useSSL=false
 spring.r2dbc.username=${MY_API_DB_USER:root}
 spring.r2dbc.password=${MY_API_DB_PASSWORD:1234}
+
 spring.sql.init.mode=always
 spring.sql.init.schema-locations=classpath:schema.sql
+
 server.port=${MY_API_PORT:8082}
 ```
 
-### Base de datos MySQL
-1. Crear la base de datos:
+---
+
+## ▶️ Ejecución en local
+
+### Opción A: Docker Compose (recomendado)
+
+Levanta MySQL + API en una red Docker (Compose crea la red automáticamente) y expone la API en **8082**.
+
+```powershell
+docker-compose up --build -d
+```
+
+Ver logs:
+
+```powershell
+docker-compose logs -f my_api_app
+```
+
+> Si todo está ok, deberías ver que la app inicia y queda escuchando en el puerto 8082.
+
+### Opción B: Local (Java + MySQL)
+
+1) Levanta MySQL localmente y crea la base de datos:
+
 ```sql
 CREATE DATABASE franquicia;
 ```
 
-2. El esquema se crea automáticamente al iniciar la aplicación
+O ejecuta el script:
 
-## 🏃 Ejecución
-
-### Compilar el proyecto
-```bash
-mvnw.cmd clean install
+```powershell
+mysql -u root -p < create-database.sql
 ```
 
-### Ejecutar la aplicación
-```bash
-mvnw.cmd spring-boot:run
+2) Ejecuta la app:
+
+```powershell
+.\mvnw.cmd spring-boot:run
 ```
-
-La aplicación estará disponible en: `http://localhost:8082`
-
-## 🧪 Pruebas unitarias y cobertura
-
-Este proyecto incluye pruebas unitarias con StepVerifier y Mockito para los casos de uso.
-
-```bash
-mvnw.cmd test
-```
-
-Para generar el reporte de cobertura con JaCoCo:
-
-```bash
-mvnw.cmd verify
-```
-
-El reporte queda en `target/site/jacoco/index.html`.
-
-## 🧪 Señales Reactivas
-
-El código implementa correctamente las señales reactivas:
-
-- **`onNext`**: Emisión de elementos (ej: productos encontrados)
-- **`onError`**: Propagación de errores con logging
-- **`onComplete`**: Finalización del flujo reactivo
-
-## 📝 Logging
-
-Se utiliza **SLF4J** con Logback para logging en múltiples niveles:
-
-- `INFO`: Operaciones principales
-- `DEBUG`: Detalles de flujo y transformaciones
-- `WARN`: Recursos no encontrados
-- `ERROR`: Errores de sistema
-
-Ejemplo:
-```java
-log.info("Iniciando creación de producto: {}", request.getNombre());
-log.debug("Producto mapeado: {}", producto);
-log.warn("Producto con ID {} no encontrado", productoId);
-log.error("Error al crear producto: {}", error.getMessage());
-```
-
-## 🎯 Decisiones de Diseño
-
-### ¿Por qué R2DBC en lugar de JPA?
-- **R2DBC** es completamente reactivo y no bloqueante
-- JPA/Hibernate **NO** son compatibles con programación reactiva
-- R2DBC permite aprovechar al máximo WebFlux para alta concurrencia
-
-### ¿Por qué Arquitectura Hexagonal?
-- **Separación de responsabilidades**: Dominio independiente de infraestructura
-- **Testabilidad**: Fácil mockear dependencias
-- **Flexibilidad**: Cambiar tecnologías sin afectar la lógica de negocio
-
-### ¿Por qué DTOs separados?
-- **Seguridad**: No exponer entidades de dominio directamente
-- **Flexibilidad**: El contrato API puede diferir del modelo interno
-- **Validación**: Validaciones específicas por endpoint
-
-## 🛡️ Manejo de Errores
-
-Respuestas de error estandarizadas:
-
-```json
-{
-  "timestamp": "2026-02-08T10:30:00",
-  "status": 404,
-  "error": "Not Found",
-  "message": "Franquicia con ID 999 no encontrado",
-  "path": "/api/v1/sucursales"
-}
-```
-
-## 📚 Referencias
-
-- [Spring WebFlux Documentation](https://docs.spring.io/spring-framework/docs/current/reference/html/web-reactive.html)
-- [R2DBC Documentation](https://r2dbc.io/)
-- [Project Reactor](https://projectreactor.io/)
-- [Hexagonal Architecture](https://alistair.cockburn.us/hexagonal-architecture/)
 
 ---
 
-**Desarrollado con ❤️ usando Arquitectura Hexagonal y Programación Reactiva**
+## 📡 Endpoints
+
+Base URL (local):
+
+- `http://localhost:8082`
+
+### Postman (colección de pruebas)
+
+En el repositorio se incluye un **archivo JSON** con una colección lista para importar en Postman y ejecutar las pruebas manuales de los endpoints:
+
+- `setic_api_collection.postman_collection.json`
+
+**Importar en Postman:**
+
+1. Postman → **Import**
+2. Selecciona el archivo `setic_api_collection.postman_collection.json`
+3. Ejecuta las requests en el orden sugerido (crear franquicia → crear sucursal → crear producto, etc.)
+
+### Franquicias
+
+- **Crear franquicia**
+  - `POST /api/v1/franquicias`
+  - Body:
+    ```json
+    { "nombre": "Franquicia ABC" }
+    ```
+
+- **Actualizar nombre**
+  - `PATCH /api/v1/franquicias/{id}`
+  - Body:
+    ```json
+    { "nombre": "Franquicia Actualizada" }
+    ```
+
+### Sucursales
+
+- **Agregar sucursal**
+  - `POST /api/v1/sucursales`
+  - Body:
+    ```json
+    { "nombre": "Sucursal Centro", "franquiciaId": 1 }
+    ```
+
+- **Actualizar nombre**
+  - `PATCH /api/v1/sucursales/{id}`
+  - Body:
+    ```json
+    { "nombre": "Sucursal Actualizada" }
+    ```
+
+### Productos
+
+- **Agregar producto**
+  - `POST /api/v1/productos`
+  - Body:
+    ```json
+    { "nombre": "Producto A", "stock": 100, "sucursalId": 1 }
+    ```
+
+- **Eliminar producto**
+  - `DELETE /api/v1/productos/{id}`
+
+- **Modificar stock**
+  - `PATCH /api/v1/productos/{id}/stock`
+  - Body:
+    ```json
+    { "nuevoStock": 150 }
+    ```
+
+- **Actualizar nombre**
+  - `PATCH /api/v1/productos/{id}`
+  - Body:
+    ```json
+    { "nombre": "Producto Actualizado" }
+    ```
+
+- **Producto con mayor stock por sucursal (por franquicia)**
+  - `GET /api/v1/productos/max-stock/franquicia/{franquiciaId}`
+
+---
+
+## 🧪 Pruebas y cobertura
+
+Ejecutar pruebas + cobertura:
+
+```powershell
+mvn clean verify
+```
+
+Reporte JaCoCo:
+
+- `target/site/jacoco/index.html`
+
+---
+
+## 🛠️ Solución de problemas
+
+### 1) Postman: `ECONNREFUSED 127.0.0.1:8082`
+
+- Asegúrate de que el contenedor `my_api_app` esté **running**.
+- Revisa logs:
+  ```powershell
+  docker-compose logs -f my_api_app
+  ```
+
+### 2) Error de DB/host (ej. `UnknownHostException my_api_mysql`)
+
+- La app debe apuntar al **nombre del servicio** dentro de la red de Docker Compose.
+- Si ejecutas todo con Compose, el hostname correcto suele ser el nombre del servicio (ej. `my_api_mysql`).
+
+### 3) Re-crear todo desde cero
+
+```powershell
+docker-compose down -v
+docker-compose up --build -d
+```
+
+---
+
+## 🗄️ Estructura de base de datos (ERD)
+
+La base de datos se compone de 3 tablas principales con relaciones 1:N:
+
+- **Una franquicia** tiene **muchas sucursales**
+- **Una sucursal** tiene **muchos productos**
+
+```text
++-------------------+          +-------------------+          +-------------------+
+|    franquicias    |          |     sucursales    |          |     productos     |
++-------------------+          +-------------------+          +-------------------+
+| PK id  BIGINT     |<---+     | PK id BIGINT      |<---+     | PK id BIGINT      |
+| nombre VARCHAR    |    |     | nombre VARCHAR    |    |     | nombre VARCHAR    |
++-------------------+    |     | FK franquicia_id  |    |     | stock INT         |
+                         |     +-------------------+    |     | FK sucursal_id    |
+                         |                              |     +-------------------+
+                         +------------------------------+---------------------------
+                                   1:N                            1:N
+
+FK sucursales.franquicia_id -> franquicias.id
+FK productos.sucursal_id    -> sucursales.id
+```
+
+### Consideraciones
+
+- Las FKs están configuradas con **`ON DELETE CASCADE`** (al eliminar una franquicia se eliminan sus sucursales; al eliminar una sucursal se eliminan sus productos).
+- Índices recomendados/creados (según `schema.sql`):
+  - `sucursales(franquicia_id)`
+  - `productos(sucursal_id)`
+  - `productos(stock)`
+
+---
