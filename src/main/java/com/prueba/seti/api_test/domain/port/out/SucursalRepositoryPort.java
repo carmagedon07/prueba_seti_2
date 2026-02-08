@@ -8,5 +8,6 @@ public interface SucursalRepositoryPort {
     Mono<Sucursal> save(Sucursal sucursal);
 
     Mono<Boolean> existsById(Long id);
-}
 
+    Mono<Sucursal> findById(Long id);
+}

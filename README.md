@@ -184,6 +184,63 @@ GET /api/v1/productos/max-stock/franquicia/{franquiciaId}
 ]
 ```
 
+### 7. Actualizar nombre de Franquicia
+```http
+PATCH /api/v1/franquicias/{id}
+Content-Type: application/json
+
+{
+  "nombre": "Franquicia Actualizada"
+}
+```
+
+**Respuesta (200 OK):**
+```json
+{
+  "id": 1,
+  "nombre": "Franquicia Actualizada"
+}
+```
+
+### 8. Actualizar nombre de Sucursal
+```http
+PATCH /api/v1/sucursales/{id}
+Content-Type: application/json
+
+{
+  "nombre": "Sucursal Actualizada"
+}
+```
+
+**Respuesta (200 OK):**
+```json
+{
+  "id": 1,
+  "nombre": "Sucursal Actualizada",
+  "franquiciaId": 1
+}
+```
+
+### 9. Actualizar nombre de Producto
+```http
+PATCH /api/v1/productos/{id}
+Content-Type: application/json
+
+{
+  "nombre": "Producto Actualizado"
+}
+```
+
+**Respuesta (200 OK):**
+```json
+{
+  "id": 1,
+  "nombre": "Producto Actualizado",
+  "stock": 150,
+  "sucursalId": 1
+}
+```
+
 ## 🔄 Flujo Reactivo
 
 El código utiliza **operadores reactivos** de Project Reactor:

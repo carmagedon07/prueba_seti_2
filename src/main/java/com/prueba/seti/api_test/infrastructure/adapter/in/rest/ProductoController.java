@@ -4,10 +4,12 @@ import com.prueba.seti.api_test.application.usecase.AgregarProductoUseCase;
 import com.prueba.seti.api_test.application.usecase.EliminarProductoUseCase;
 import com.prueba.seti.api_test.application.usecase.ModificarStockProductoUseCase;
 import com.prueba.seti.api_test.application.usecase.ObtenerProductoMaxStockPorSucursalUseCase;
+import com.prueba.seti.api_test.application.usecase.ActualizarNombreProductoUseCase;
 import com.prueba.seti.api_test.domain.dto.ActualizarStockRequest;
 import com.prueba.seti.api_test.domain.dto.ProductoMaxStockResponse;
 import com.prueba.seti.api_test.domain.dto.ProductoRequest;
 import com.prueba.seti.api_test.domain.dto.ProductoResponse;
+import com.prueba.seti.api_test.domain.dto.ActualizarNombreRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,15 +33,18 @@ public class ProductoController {
     private final EliminarProductoUseCase eliminarProductoUseCase;
     private final ModificarStockProductoUseCase modificarStockProductoUseCase;
     private final ObtenerProductoMaxStockPorSucursalUseCase obtenerProductoMaxStockPorSucursalUseCase;
+    private final ActualizarNombreProductoUseCase actualizarNombreProductoUseCase;
 
     public ProductoController(AgregarProductoUseCase agregarProductoUseCase,
                               EliminarProductoUseCase eliminarProductoUseCase,
                               ModificarStockProductoUseCase modificarStockProductoUseCase,
-                              ObtenerProductoMaxStockPorSucursalUseCase obtenerProductoMaxStockPorSucursalUseCase) {
+                              ObtenerProductoMaxStockPorSucursalUseCase obtenerProductoMaxStockPorSucursalUseCase,
+                              ActualizarNombreProductoUseCase actualizarNombreProductoUseCase) {
         this.agregarProductoUseCase = agregarProductoUseCase;
         this.eliminarProductoUseCase = eliminarProductoUseCase;
         this.modificarStockProductoUseCase = modificarStockProductoUseCase;
         this.obtenerProductoMaxStockPorSucursalUseCase = obtenerProductoMaxStockPorSucursalUseCase;
+        this.actualizarNombreProductoUseCase = actualizarNombreProductoUseCase;
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -64,5 +69,10 @@ public class ProductoController {
     public Flux<ProductoMaxStockResponse> obtenerMaxStock(@PathVariable("franquiciaId") Long franquiciaId) {
         return obtenerProductoMaxStockPorSucursalUseCase.execute(franquiciaId);
     }
-}
 
+    @PatchMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<ProductoResponse> actualizarNombre(@PathVariable("id") Long id,
+                                                   @Valid @RequestBody ActualizarNombreRequest request) {
+        return actualizarNombreProductoUseCase.execute(id, request);
+    }
+}

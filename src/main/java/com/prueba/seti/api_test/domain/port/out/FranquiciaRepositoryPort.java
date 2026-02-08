@@ -8,5 +8,6 @@ public interface FranquiciaRepositoryPort {
     Mono<Franquicia> save(Franquicia franquicia);
 
     Mono<Boolean> existsById(Long id);
-}
 
+    Mono<Franquicia> findById(Long id);
+}

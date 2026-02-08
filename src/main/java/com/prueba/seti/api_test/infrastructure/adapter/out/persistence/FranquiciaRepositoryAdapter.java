@@ -26,5 +26,10 @@ public class FranquiciaRepositoryAdapter implements FranquiciaRepositoryPort {
     public Mono<Boolean> existsById(Long id) {
         return franquiciaR2dbcRepository.existsById(id);
     }
-}
 
+    @Override
+    public Mono<Franquicia> findById(Long id) {
+        return franquiciaR2dbcRepository.findById(id)
+            .map(FranquiciaMapper::toDomain);
+    }
+}

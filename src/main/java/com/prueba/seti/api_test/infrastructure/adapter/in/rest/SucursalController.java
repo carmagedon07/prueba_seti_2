@@ -1,16 +1,15 @@
 package com.prueba.seti.api_test.infrastructure.adapter.in.rest;
 
 import com.prueba.seti.api_test.application.usecase.AgregarSucursalUseCase;
+import com.prueba.seti.api_test.application.usecase.ActualizarNombreSucursalUseCase;
+import com.prueba.seti.api_test.domain.dto.ActualizarNombreRequest;
 import com.prueba.seti.api_test.domain.dto.SucursalRequest;
 import com.prueba.seti.api_test.domain.dto.SucursalResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -18,9 +17,12 @@ import reactor.core.publisher.Mono;
 public class SucursalController {
 
     private final AgregarSucursalUseCase agregarSucursalUseCase;
+    private final ActualizarNombreSucursalUseCase actualizarNombreSucursalUseCase;
 
-    public SucursalController(AgregarSucursalUseCase agregarSucursalUseCase) {
+    public SucursalController(AgregarSucursalUseCase agregarSucursalUseCase,
+                              ActualizarNombreSucursalUseCase actualizarNombreSucursalUseCase) {
         this.agregarSucursalUseCase = agregarSucursalUseCase;
+        this.actualizarNombreSucursalUseCase = actualizarNombreSucursalUseCase;
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -28,5 +30,10 @@ public class SucursalController {
     public Mono<SucursalResponse> agregar(@Valid @RequestBody SucursalRequest request) {
         return agregarSucursalUseCase.execute(request);
     }
-}
 
+    @PatchMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<SucursalResponse> actualizarNombre(@PathVariable("id") Long id,
+                                                   @Valid @RequestBody ActualizarNombreRequest request) {
+        return actualizarNombreSucursalUseCase.execute(id, request);
+    }
+}

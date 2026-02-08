@@ -26,5 +26,10 @@ public class SucursalRepositoryAdapter implements SucursalRepositoryPort {
     public Mono<Boolean> existsById(Long id) {
         return sucursalR2dbcRepository.existsById(id);
     }
-}
 
+    @Override
+    public Mono<Sucursal> findById(Long id) {
+        return sucursalR2dbcRepository.findById(id)
+            .map(SucursalMapper::toDomain);
+    }
+}
