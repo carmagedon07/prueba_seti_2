@@ -34,14 +34,42 @@ API REST reactiva para gestionar **franquicias**, **sucursales** y **productos**
 
 ## 🚀 Tecnologías
 
-- Java 17+
-- Spring Boot (WebFlux)
-- Spring Data R2DBC
-- MySQL
-- Maven
-- Lombok
-- JUnit 5, Mockito, Reactor Test
-- JaCoCo
+- **Java 17+**
+  - Lenguaje y runtime. El proyecto está configurado para Java 17 en Maven, pero es compatible con versiones superiores (por ejemplo Java 21).
+
+- **Spring Boot (WebFlux)**
+  - Framework principal para construir la API.
+  - Se usa **WebFlux** para un modelo **reactivo/no bloqueante** (ideal para I/O: llamadas a BD, alta concurrencia).
+
+- **Spring Data R2DBC**
+  - Capa de data access reactiva.
+  - Permite repositorios reactivos (`ReactiveCrudRepository`) y consultas con `Mono`/`Flux`.
+
+- **Driver R2DBC MySQL (io.asyncer:r2dbc-mysql)**
+  - Conector reactivo específico para MySQL.
+  - A diferencia de JDBC, evita bloquear hilos en operaciones de base de datos.
+
+- **MySQL**
+  - Base de datos relacional.
+  - En este proyecto se inicializa el esquema con:
+    - `create-database.sql` (creación de la base `franquicia`)
+    - `schema.sql` (creación de tablas/índices al iniciar la app)
+
+- **Maven + Maven Wrapper (`mvnw` / `mvnw.cmd`)**
+  - Gestión de dependencias, build y ejecución.
+  - El wrapper permite compilar/ejecutar sin instalar Maven global.
+
+- **Lombok**
+  - Reduce código repetitivo (getters/setters/builders/constructores) en modelos y DTOs.
+
+- **JUnit 5 + Mockito + Reactor Test**
+  - **JUnit 5**: framework de pruebas.
+  - **Mockito**: mocks/stubs para aislar los casos de uso (mock de puertos/repos).
+  - **Reactor Test**: `StepVerifier` para validar flujos reactivos (`Mono`/`Flux`).
+
+- **JaCoCo**
+  - Genera métricas de cobertura de pruebas.
+  - El reporte HTML se genera con `mvn clean verify` en `target/site/jacoco/index.html`.
 
 ---
 
@@ -300,11 +328,39 @@ Reporte JaCoCo:
 
 ### 1) Postman: `ECONNREFUSED 127.0.0.1:8082`
 
-- Asegúrate de que el contenedor `my_api_app` esté **running**.
-- Revisa logs:
-  ```powershell
-  docker-compose logs -f my_api_app
-  ```
+Este error significa que **tu máquina rechazó la conexión TCP** a `localhost:8082`. No es un error de JSON ni de Postman: es que **no hay nada escuchando** en ese puerto (o no está publicado).
+
+Causas típicas:
+
+- El contenedor **`my_api_app` no está corriendo** o está reiniciándose.
+- El contenedor corre, pero **la API no está escuchando en 8082** (config de `server.port`).
+- Estás ejecutando la API en Docker pero **no publicaste el puerto** (`ports: - "8082:8082"`).
+- El contenedor levantó pero **falló al iniciar** (por ejemplo, no logra conectarse a MySQL) y se apaga.
+
+Pasos de verificación (Docker Compose):
+
+1. Ver estado de contenedores:
+   ```powershell
+   docker-compose ps
+   ```
+   - Debes ver `my_api_app` en estado **Up**.
+
+2. Ver logs de la API:
+   ```powershell
+   docker-compose logs -f my_api_app
+   ```
+   - Busca un log tipo: “Started ... on port(s): 8082”, o errores de conexión a BD.
+
+3. Verificar que el puerto esté publicado en Windows:
+   ```powershell
+   netstat -ano | findstr :8082
+   ```
+   - Debe aparecer `LISTENING`. Si no aparece, la API **no está exponiendo** el puerto.
+
+4. Probar desde el navegador:
+   - Abre `http://localhost:8082` o ejecuta un GET a cualquier endpoint.
+
+> Nota: si estás usando Docker Compose, `localhost` solo aplica para el **host**. Dentro de contenedores, `localhost` apunta al contenedor mismo. Por eso, la API debe conectarse a MySQL usando el **nombre del servicio** (por ejemplo `my_api_mysql`).
 
 ### 2) Error de DB/host (ej. `UnknownHostException my_api_mysql`)
 
@@ -343,12 +399,41 @@ FK sucursales.franquicia_id -> franquicias.id
 FK productos.sucursal_id    -> sucursales.id
 ```
 
-### Consideraciones
+## 🧾 ¿Por qué MySQL y Docker? (y alternativas)
 
-- Las FKs están configuradas con **`ON DELETE CASCADE`** (al eliminar una franquicia se eliminan sus sucursales; al eliminar una sucursal se eliminan sus productos).
-- Índices recomendados/creados (según `schema.sql`):
-  - `sucursales(franquicia_id)`
-  - `productos(sucursal_id)`
-  - `productos(stock)`
+Este proyecto podía usar distintos sistemas de persistencia como **Redis, MySQL, MongoDB o DynamoDB**. Se eligió **MySQL** (relacional) y contenedorización con **Docker** por estas razones:
 
----
+### Por qué MySQL (modelo relacional)
+
+- **Modelo de datos naturalmente relacional**: una **Franquicia** tiene muchas **Sucursales** y una **Sucursal** tiene muchos **Productos**. Esto encaja perfecto con:
+  - llaves foráneas,
+  - consistencia referencial,
+  - consultas simples y claras.
+
+- **Consistencia (ACID)**: para operaciones como actualizar stock o renombrar entidades, un motor relacional aporta garantías de consistencia y transacciones.
+
+- **Consultas agregadas/ordenamiento**: el caso de uso “producto con mayor stock por sucursal” se resuelve eficientemente con SQL (ORDER BY + LIMIT) y/o índices.
+
+- **Compatibilidad con R2DBC**: al usar WebFlux, es importante mantener el stack no-bloqueante; con R2DBC + MySQL se conserva el enfoque reactivo hasta la base de datos.
+
+### Por qué Docker (despliegue reproducible)
+
+- **Entorno local consistente**: evita “en mi máquina funciona” al fijar versión de MySQL e inicialización.
+- **Red interna por DNS de servicios**: la API se conecta usando el hostname del servicio (por ejemplo `my_api_mysql`) dentro de la red del Compose.
+- **Onboarding rápido**: con un solo `docker-compose up` se levanta DB + API.
+
+### Alternativas y cuándo usarlas
+
+- **Redis**
+  - Excelente para **caché**, sesiones, colas simples o rate limiting.
+  - No es la mejor opción como **fuente de verdad** (source of truth) para relaciones y consistencia fuerte.
+
+- **MongoDB (documental)**
+  - Útil cuando el modelo es más flexible y orientado a documentos.
+  - En este dominio (relaciones 1:N claras, reglas de integridad) el modelo relacional es más directo.
+
+- **DynamoDB (NoSQL administrado en AWS)**
+  - Muy útil en AWS para alta escala, baja latencia y modelo key-value/document.
+  - Implica diseño por patrones de acceso, y para dev local generalmente se usa DynamoDB Local.
+  - Para una prueba técnica local, MySQL + Docker reduce complejidad operativa.
+
