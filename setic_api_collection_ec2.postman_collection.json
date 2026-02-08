@@ -1,0 +1,175 @@
+{
+  "info": {
+    "_postman_id": "b6b8c7a2-3b55-4f7a-9f1a-0a4f7f5a8c01",
+    "name": "Prueba SETI API (EC2)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://ec2-54-242-195-142.compute-1.amazonaws.com:8082"
+    }
+  ],
+  "item": [
+    {
+      "name": "Franquicias",
+      "item": [
+        {
+          "name": "Crear Franquicia",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Franquicia Nueva\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/franquicias"
+          },
+          "response": []
+        },
+        {
+          "name": "Actualizar Nombre Franquicia",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Franquicia Renombrada\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/franquicias/1"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Sucursales",
+      "item": [
+        {
+          "name": "Agregar Sucursal",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Sucursal Centro\",\n    \"franquiciaId\": 1\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/sucursales"
+          },
+          "response": []
+        },
+        {
+          "name": "Actualizar Nombre Sucursal",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Sucursal Norte\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/sucursales/1"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Productos",
+      "item": [
+        {
+          "name": "Agregar Producto",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Producto A\",\n    \"stock\": 100,\n    \"sucursalId\": 1\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/productos"
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar Producto",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/productos/1"
+          },
+          "response": []
+        },
+        {
+          "name": "Modificar Stock Producto",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"stock\": 150\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/productos/1/stock"
+          },
+          "response": []
+        },
+        {
+          "name": "Actualizar Nombre Producto",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Producto A-Plus\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/productos/1"
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener Producto con Máximo Stock por Sucursal",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/productos/max-stock/franquicia/1"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
+

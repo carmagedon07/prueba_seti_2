@@ -237,15 +237,23 @@ Base URL (local):
 
 ### Postman (colección de pruebas)
 
-En el repositorio se incluye un **archivo JSON** con una colección lista para importar en Postman y ejecutar las pruebas manuales de los endpoints:
+En el repositorio se incluyen colecciones listas para importar en Postman:
 
-- `setic_api_collection.postman_collection.json`
+- **Local (Docker/PC):** `setic_api_collection.postman_collection.json`
+- **Servidor en Amazon (AWS EC2):** `setic_api_collection_ec2.postman_collection.json`
+
+La colección de **AWS EC2** está preconfigurada para apuntar a un despliegue remoto usando el DNS público:
+
+- `http://ec2-54-242-195-142.compute-1.amazonaws.com:8082`
+
+Además, usa la variable `{{baseUrl}}` para que puedas cambiar fácilmente el host/puerto si el despliegue cambia (por ejemplo si luego usas un ALB, HTTPS o un dominio propio).
 
 **Importar en Postman:**
 
 1. Postman → **Import**
-2. Selecciona el archivo `setic_api_collection.postman_collection.json`
-3. Ejecuta las requests en el orden sugerido (crear franquicia → crear sucursal → crear producto, etc.)
+2. Selecciona el archivo `.json` de la colección
+3. (Opcional) Ajusta `baseUrl` dentro de la colección si cambias de ambiente
+4. Ejecuta las requests en el orden sugerido (crear franquicia → crear sucursal → crear producto, etc.)
 
 ### Franquicias
 
