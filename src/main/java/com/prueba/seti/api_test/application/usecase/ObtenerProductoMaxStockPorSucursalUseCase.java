@@ -7,7 +7,9 @@ import com.prueba.seti.api_test.domain.port.out.ProductoRepositoryPort;
 import com.prueba.seti.api_test.domain.model.ProductoMaxStock;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class ObtenerProductoMaxStockPorSucursalUseCase {
 
     private final ProductoRepositoryPort productoRepositoryPort;
@@ -25,9 +27,15 @@ public class ObtenerProductoMaxStockPorSucursalUseCase {
                 if (!exists) {
                     return Flux.error(new ResourceNotFoundException("Franquicia", franquiciaId));
                 }
-                return productoRepositoryPort.findMaxStockByFranquiciaId(franquiciaId)
-                    .map(this::toResponse);
-            });
+                Flux<ProductoMaxStockResponse> productos = productoRepositoryPort.findMaxStockByFranquiciaId(franquiciaId)
+                    .map(this::toResponse)
+                    .doOnNext(response -> log.debug("Max stock sucursalId={} productoId={}", response.getSucursalId(), response.getProductoId()));
+                Flux<ProductoMaxStockResponse> auditoria = Flux.<ProductoMaxStockResponse>empty()
+                    .doOnSubscribe(sub -> log.info("Consultando max stock por sucursal franquiciaId={}", franquiciaId));
+                return Flux.merge(productos, auditoria);
+            })
+            .doOnComplete(() -> log.info("Consulta max stock completada franquiciaId={}", franquiciaId))
+            .doOnError(error -> log.error("Error consultando max stock franquiciaId={}: {}", franquiciaId, error.getMessage(), error));
     }
 
     private ProductoMaxStockResponse toResponse(ProductoMaxStock producto) {

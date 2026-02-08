@@ -60,7 +60,7 @@ El proyecto sigue la arquitectura hexagonal con las siguientes capas:
 
 ## 🚀 Tecnologías
 
-- **Java 21**
+- **Java 17**
 - **Spring Boot 4.0.2**
 - **Spring WebFlux** (Programación reactiva)
 - **R2DBC** (Reactive Relational Database Connectivity)
@@ -243,13 +243,27 @@ productos
 
 ## 🔧 Configuración
 
+### Variables de entorno
+
+```text
+MY_API_DB_HOST=localhost
+MY_API_DB_PORT=3306
+MY_API_DB_NAME=franquicia
+MY_API_DB_USER=root
+MY_API_DB_PASSWORD=1234
+MY_API_PORT=8082
+```
+
 ### application.properties
+
 ```properties
 spring.application.name=api_test
-spring.r2dbc.url=r2dbc:mysql://localhost:3306/franquicia
-spring.r2dbc.username=root
-spring.r2dbc.password=1234
-server.port=8080
+spring.r2dbc.url=r2dbc:mysql://${MY_API_DB_HOST:localhost}:${MY_API_DB_PORT:3306}/${MY_API_DB_NAME:franquicia}?useSSL=false
+spring.r2dbc.username=${MY_API_DB_USER:root}
+spring.r2dbc.password=${MY_API_DB_PASSWORD:1234}
+spring.sql.init.mode=always
+spring.sql.init.schema-locations=classpath:schema.sql
+server.port=${MY_API_PORT:8082}
 ```
 
 ### Base de datos MySQL
@@ -264,15 +278,31 @@ CREATE DATABASE franquicia;
 
 ### Compilar el proyecto
 ```bash
-mvnw clean install
+mvnw.cmd clean install
 ```
 
 ### Ejecutar la aplicación
 ```bash
-mvnw spring-boot:run
+mvnw.cmd spring-boot:run
 ```
 
-La aplicación estará disponible en: `http://localhost:8080`
+La aplicación estará disponible en: `http://localhost:8082`
+
+## 🧪 Pruebas unitarias y cobertura
+
+Este proyecto incluye pruebas unitarias con StepVerifier y Mockito para los casos de uso.
+
+```bash
+mvnw.cmd test
+```
+
+Para generar el reporte de cobertura con JaCoCo:
+
+```bash
+mvnw.cmd verify
+```
+
+El reporte queda en `target/site/jacoco/index.html`.
 
 ## 🧪 Señales Reactivas
 
@@ -340,5 +370,3 @@ Respuestas de error estandarizadas:
 ---
 
 **Desarrollado con ❤️ usando Arquitectura Hexagonal y Programación Reactiva**
-
-
