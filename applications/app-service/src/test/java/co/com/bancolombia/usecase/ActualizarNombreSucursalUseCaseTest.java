@@ -1,9 +1,9 @@
 package co.com.bancolombia.usecase;
 
 import co.com.bancolombia.prueba.seti.api_test.domain.dto.ActualizarNombreRequest;
-import co.com.bancolombia.prueba.seti.api_test.domain.exception.ResourceNotFoundException;
-import co.com.bancolombia.prueba.seti.api_test.domain.model.Sucursal;
-import co.com.bancolombia.prueba.seti.api_test.domain.port.out.SucursalRepositoryPort;
+import co.com.bancolombia.model.exception.ResourceNotFoundException;
+import co.com.bancolombia.model.sucursal.Sucursal;
+import co.com.bancolombia.model.port.out.SucursalRepositoryPort;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -39,4 +39,3 @@ class ActualizarNombreSucursalUseCaseTest {
             .verify();
     }
 }
-

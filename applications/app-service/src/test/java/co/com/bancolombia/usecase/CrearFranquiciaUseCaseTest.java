@@ -1,8 +1,8 @@
 package co.com.bancolombia.usecase;
 
 import co.com.bancolombia.prueba.seti.api_test.domain.dto.FranquiciaRequest;
-import co.com.bancolombia.prueba.seti.api_test.domain.model.Franquicia;
-import co.com.bancolombia.prueba.seti.api_test.domain.port.out.FranquiciaRepositoryPort;
+import co.com.bancolombia.model.franquicia.Franquicia;
+import co.com.bancolombia.model.port.out.FranquiciaRepositoryPort;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -27,4 +27,3 @@ class CrearFranquiciaUseCaseTest {
             .verifyComplete();
     }
 }
-

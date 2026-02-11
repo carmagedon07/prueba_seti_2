@@ -1,10 +1,10 @@
 package co.com.bancolombia.usecase;
 
 import co.com.bancolombia.prueba.seti.api_test.domain.dto.ProductoRequest;
-import co.com.bancolombia.prueba.seti.api_test.domain.exception.ResourceNotFoundException;
-import co.com.bancolombia.prueba.seti.api_test.domain.model.Producto;
-import co.com.bancolombia.prueba.seti.api_test.domain.port.out.ProductoRepositoryPort;
-import co.com.bancolombia.prueba.seti.api_test.domain.port.out.SucursalRepositoryPort;
+import co.com.bancolombia.model.exception.ResourceNotFoundException;
+import co.com.bancolombia.model.producto.Producto;
+import co.com.bancolombia.model.port.out.ProductoRepositoryPort;
+import co.com.bancolombia.model.port.out.SucursalRepositoryPort;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -43,4 +43,3 @@ class AgregarProductoUseCaseTest {
             .verify();
     }
 }
-

@@ -1,8 +1,8 @@
 package co.com.bancolombia.config;
 
-import co.com.bancolombia.prueba.seti.api_test.domain.port.out.FranquiciaRepositoryPort;
-import co.com.bancolombia.prueba.seti.api_test.domain.port.out.ProductoRepositoryPort;
-import co.com.bancolombia.prueba.seti.api_test.domain.port.out.SucursalRepositoryPort;
+import co.com.bancolombia.model.port.out.FranquiciaRepositoryPort;
+import co.com.bancolombia.model.port.out.ProductoRepositoryPort;
+import co.com.bancolombia.model.port.out.SucursalRepositoryPort;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;

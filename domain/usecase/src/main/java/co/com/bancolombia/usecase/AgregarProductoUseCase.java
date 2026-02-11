@@ -1,11 +1,11 @@
 package co.com.bancolombia.usecase;
 
+import co.com.bancolombia.model.dto.AgregarProductoRequest;
+import co.com.bancolombia.model.exception.ResourceNotFoundException;
+import co.com.bancolombia.model.producto.Producto;
+import co.com.bancolombia.model.port.out.ProductoRepositoryPort;
+import co.com.bancolombia.model.port.out.SucursalRepositoryPort;
 import co.com.bancolombia.prueba.seti.api_test.domain.dto.ProductoRequest;
-import co.com.bancolombia.prueba.seti.api_test.domain.dto.ProductoResponse;
-import co.com.bancolombia.prueba.seti.api_test.domain.exception.ResourceNotFoundException;
-import co.com.bancolombia.prueba.seti.api_test.domain.model.Producto;
-import co.com.bancolombia.prueba.seti.api_test.domain.port.out.ProductoRepositoryPort;
-import co.com.bancolombia.prueba.seti.api_test.domain.port.out.SucursalRepositoryPort;
 import reactor.core.publisher.Mono;
 
 public class AgregarProductoUseCase {
@@ -19,17 +19,14 @@ public class AgregarProductoUseCase {
         this.sucursalRepositoryPort = sucursalRepositoryPort;
     }
 
-    public Mono<ProductoResponse> execute(ProductoRequest request) {
-        return Mono.zip(Mono.just(request), sucursalRepositoryPort.existsById(request.getSucursalId()))
-            .flatMap(tuple -> {
-                ProductoRequest req = tuple.getT1();
-                Boolean exists = tuple.getT2();
-                if (!exists) {
-                    return Mono.error(new ResourceNotFoundException("Sucursal", req.getSucursalId()));
+    public Mono<Producto> execute(ProductoRequest request) {
+        return sucursalRepositoryPort.existsById(request.getSucursalId())
+            .flatMap(exists -> {
+                if (Boolean.FALSE.equals(exists)) {
+                    return Mono.error(new ResourceNotFoundException("Sucursal", request.getSucursalId()));
                 }
-                Producto producto = new Producto(null, req.getNombre(), req.getStock(), req.getSucursalId());
-                return productoRepositoryPort.save(producto)
-                    .map(saved -> new ProductoResponse(saved.getId(), saved.getNombre(), saved.getStock(), saved.getSucursalId()));
+                Producto producto = new Producto(null, request.getNombre(), request.getStock(), request.getSucursalId());
+                return productoRepositoryPort.save(producto);
             });
     }
 }

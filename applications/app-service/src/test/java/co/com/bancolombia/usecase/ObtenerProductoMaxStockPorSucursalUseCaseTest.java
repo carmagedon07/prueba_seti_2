@@ -1,9 +1,9 @@
 package co.com.bancolombia.usecase;
 
-import co.com.bancolombia.prueba.seti.api_test.domain.exception.ResourceNotFoundException;
-import co.com.bancolombia.prueba.seti.api_test.domain.model.ProductoMaxStock;
-import co.com.bancolombia.prueba.seti.api_test.domain.port.out.FranquiciaRepositoryPort;
-import co.com.bancolombia.prueba.seti.api_test.domain.port.out.ProductoRepositoryPort;
+import co.com.bancolombia.model.dto.ProductoMaxStock;
+import co.com.bancolombia.model.exception.ResourceNotFoundException;
+import co.com.bancolombia.model.port.out.FranquiciaRepositoryPort;
+import co.com.bancolombia.model.port.out.ProductoRepositoryPort;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -47,4 +47,3 @@ class ObtenerProductoMaxStockPorSucursalUseCaseTest {
             .verify();
     }
 }
-

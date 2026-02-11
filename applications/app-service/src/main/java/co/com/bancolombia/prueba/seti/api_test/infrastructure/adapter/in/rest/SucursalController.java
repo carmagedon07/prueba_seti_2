@@ -1,10 +1,11 @@
 package co.com.bancolombia.prueba.seti.api_test.infrastructure.adapter.in.rest;
 
-import co.com.bancolombia.usecase.ActualizarNombreSucursalUseCase;
-import co.com.bancolombia.usecase.AgregarSucursalUseCase;
 import co.com.bancolombia.prueba.seti.api_test.domain.dto.ActualizarNombreRequest;
 import co.com.bancolombia.prueba.seti.api_test.domain.dto.SucursalRequest;
 import co.com.bancolombia.prueba.seti.api_test.domain.dto.SucursalResponse;
+import co.com.bancolombia.model.sucursal.Sucursal;
+import co.com.bancolombia.usecase.ActualizarNombreSucursalUseCase;
+import co.com.bancolombia.usecase.AgregarSucursalUseCase;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -33,13 +34,18 @@ public class SucursalController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<SucursalResponse> agregar(@Valid @RequestBody SucursalRequest request) {
-        return agregarSucursalUseCase.execute(request);
+        return agregarSucursalUseCase.execute(request)
+            .map(this::toResponse);
     }
 
     @PatchMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<SucursalResponse> actualizarNombre(@PathVariable("id") Long id,
                                                    @Valid @RequestBody ActualizarNombreRequest request) {
-        return actualizarNombreSucursalUseCase.execute(id, request);
+        return actualizarNombreSucursalUseCase.execute(id, request)
+            .map(this::toResponse);
+    }
+
+    private SucursalResponse toResponse(Sucursal sucursal) {
+        return new SucursalResponse(sucursal.getId(), sucursal.getNombre(), sucursal.getFranquiciaId());
     }
 }
-

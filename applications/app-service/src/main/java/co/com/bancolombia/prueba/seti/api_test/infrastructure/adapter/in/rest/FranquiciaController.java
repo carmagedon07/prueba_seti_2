@@ -1,10 +1,11 @@
 package co.com.bancolombia.prueba.seti.api_test.infrastructure.adapter.in.rest;
 
-import co.com.bancolombia.usecase.ActualizarNombreFranquiciaUseCase;
-import co.com.bancolombia.usecase.CrearFranquiciaUseCase;
 import co.com.bancolombia.prueba.seti.api_test.domain.dto.ActualizarNombreRequest;
 import co.com.bancolombia.prueba.seti.api_test.domain.dto.FranquiciaRequest;
 import co.com.bancolombia.prueba.seti.api_test.domain.dto.FranquiciaResponse;
+import co.com.bancolombia.model.franquicia.Franquicia;
+import co.com.bancolombia.usecase.ActualizarNombreFranquiciaUseCase;
+import co.com.bancolombia.usecase.CrearFranquiciaUseCase;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -33,12 +34,18 @@ public class FranquiciaController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<FranquiciaResponse> crear(@Valid @RequestBody FranquiciaRequest request) {
-        return crearFranquiciaUseCase.execute(request);
+        return crearFranquiciaUseCase.execute(request)
+            .map(this::toResponse);
     }
 
     @PatchMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<FranquiciaResponse> actualizarNombre(@PathVariable("id") Long id,
                                                      @Valid @RequestBody ActualizarNombreRequest request) {
-        return actualizarNombreFranquiciaUseCase.execute(id, request);
+        return actualizarNombreFranquiciaUseCase.execute(id, request)
+            .map(this::toResponse);
+    }
+
+    private FranquiciaResponse toResponse(Franquicia franquicia) {
+        return new FranquiciaResponse(franquicia.getId(), franquicia.getNombre());
     }
 }

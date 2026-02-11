@@ -1,15 +1,16 @@
 package co.com.bancolombia.prueba.seti.api_test.infrastructure.adapter.in.rest;
 
-import co.com.bancolombia.usecase.ActualizarNombreProductoUseCase;
-import co.com.bancolombia.usecase.AgregarProductoUseCase;
-import co.com.bancolombia.usecase.EliminarProductoUseCase;
-import co.com.bancolombia.usecase.ModificarStockProductoUseCase;
-import co.com.bancolombia.usecase.ObtenerProductoMaxStockPorSucursalUseCase;
 import co.com.bancolombia.prueba.seti.api_test.domain.dto.ActualizarNombreRequest;
 import co.com.bancolombia.prueba.seti.api_test.domain.dto.ActualizarStockRequest;
 import co.com.bancolombia.prueba.seti.api_test.domain.dto.ProductoMaxStockResponse;
 import co.com.bancolombia.prueba.seti.api_test.domain.dto.ProductoRequest;
 import co.com.bancolombia.prueba.seti.api_test.domain.dto.ProductoResponse;
+import co.com.bancolombia.model.producto.Producto;
+import co.com.bancolombia.usecase.ActualizarNombreProductoUseCase;
+import co.com.bancolombia.usecase.AgregarProductoUseCase;
+import co.com.bancolombia.usecase.EliminarProductoUseCase;
+import co.com.bancolombia.usecase.ModificarStockProductoUseCase;
+import co.com.bancolombia.usecase.ObtenerProductoMaxStockPorSucursalUseCase;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -50,7 +51,8 @@ public class ProductoController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<ProductoResponse> agregar(@Valid @RequestBody ProductoRequest request) {
-        return agregarProductoUseCase.execute(request);
+        return agregarProductoUseCase.execute(request)
+            .map(this::toResponse);
     }
 
     @DeleteMapping("/{id}")
@@ -62,18 +64,34 @@ public class ProductoController {
     @PatchMapping(value = "/{id}/stock", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ProductoResponse> modificarStock(@PathVariable("id") Long id,
                                                  @Valid @RequestBody ActualizarStockRequest request) {
-        return modificarStockProductoUseCase.execute(id, request);
+        return modificarStockProductoUseCase.execute(id, request)
+            .map(this::toResponse);
     }
 
     @GetMapping(value = "/max-stock/franquicia/{franquiciaId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Flux<ProductoMaxStockResponse> obtenerMaxStock(@PathVariable("franquiciaId") Long franquiciaId) {
-        return obtenerProductoMaxStockPorSucursalUseCase.execute(franquiciaId);
+        return obtenerProductoMaxStockPorSucursalUseCase.execute(franquiciaId)
+            .map(this::toMaxStockResponse);
     }
 
     @PatchMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ProductoResponse> actualizarNombre(@PathVariable("id") Long id,
                                                    @Valid @RequestBody ActualizarNombreRequest request) {
-        return actualizarNombreProductoUseCase.execute(id, request);
+        return actualizarNombreProductoUseCase.execute(id, request)
+            .map(this::toResponse);
+    }
+
+    private ProductoResponse toResponse(Producto producto) {
+        return new ProductoResponse(producto.getId(), producto.getNombre(), producto.getStock(), producto.getSucursalId());
+    }
+
+    private ProductoMaxStockResponse toMaxStockResponse(ProductoMaxStockResponse response) {
+        return new ProductoMaxStockResponse(
+            response.getProductoId(),
+            response.getNombreProducto(),
+            response.getStock(),
+            response.getSucursalId(),
+            response.getNombreSucursal()
+        );
     }
 }
-

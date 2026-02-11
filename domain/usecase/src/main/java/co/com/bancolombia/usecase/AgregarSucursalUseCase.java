@@ -1,11 +1,10 @@
 package co.com.bancolombia.usecase;
 
+import co.com.bancolombia.model.exception.ResourceNotFoundException;
+import co.com.bancolombia.model.sucursal.Sucursal;
+import co.com.bancolombia.model.port.out.FranquiciaRepositoryPort;
+import co.com.bancolombia.model.port.out.SucursalRepositoryPort;
 import co.com.bancolombia.prueba.seti.api_test.domain.dto.SucursalRequest;
-import co.com.bancolombia.prueba.seti.api_test.domain.dto.SucursalResponse;
-import co.com.bancolombia.prueba.seti.api_test.domain.exception.ResourceNotFoundException;
-import co.com.bancolombia.prueba.seti.api_test.domain.model.Sucursal;
-import co.com.bancolombia.prueba.seti.api_test.domain.port.out.FranquiciaRepositoryPort;
-import co.com.bancolombia.prueba.seti.api_test.domain.port.out.SucursalRepositoryPort;
 import reactor.core.publisher.Mono;
 
 public class AgregarSucursalUseCase {
@@ -19,17 +18,14 @@ public class AgregarSucursalUseCase {
         this.franquiciaRepositoryPort = franquiciaRepositoryPort;
     }
 
-    public Mono<SucursalResponse> execute(SucursalRequest request) {
-        return Mono.zip(Mono.just(request), franquiciaRepositoryPort.existsById(request.getFranquiciaId()))
-            .flatMap(tuple -> {
-                SucursalRequest req = tuple.getT1();
-                Boolean exists = tuple.getT2();
-                if (!exists) {
-                    return Mono.error(new ResourceNotFoundException("Franquicia", req.getFranquiciaId()));
+    public Mono<Sucursal> execute(SucursalRequest request) {
+        return franquiciaRepositoryPort.existsById(request.getFranquiciaId())
+            .flatMap(exists -> {
+                if (Boolean.FALSE.equals(exists)) {
+                    return Mono.error(new ResourceNotFoundException("Franquicia", request.getFranquiciaId()));
                 }
-                Sucursal sucursal = new Sucursal(null, req.getNombre(), req.getFranquiciaId());
-                return sucursalRepositoryPort.save(sucursal)
-                    .map(saved -> new SucursalResponse(saved.getId(), saved.getNombre(), saved.getFranquiciaId()));
+                Sucursal sucursal = new Sucursal(null, request.getNombre(), request.getFranquiciaId());
+                return sucursalRepositoryPort.save(sucursal);
             });
     }
 }
