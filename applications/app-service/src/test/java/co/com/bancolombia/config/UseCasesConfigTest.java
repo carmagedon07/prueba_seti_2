@@ -1,11 +1,16 @@
 package co.com.bancolombia.config;
 
+import co.com.bancolombia.prueba.seti.api_test.domain.port.out.FranquiciaRepositoryPort;
+import co.com.bancolombia.prueba.seti.api_test.domain.port.out.ProductoRepositoryPort;
+import co.com.bancolombia.prueba.seti.api_test.domain.port.out.SucursalRepositoryPort;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 class UseCasesConfigTest {
 
@@ -29,6 +34,21 @@ class UseCasesConfigTest {
     @Configuration
     @Import(UseCasesConfig.class)
     static class TestConfig {
+
+        @Bean
+        public FranquiciaRepositoryPort franquiciaRepositoryPort() {
+            return mock(FranquiciaRepositoryPort.class);
+        }
+
+        @Bean
+        public SucursalRepositoryPort sucursalRepositoryPort() {
+            return mock(SucursalRepositoryPort.class);
+        }
+
+        @Bean
+        public ProductoRepositoryPort productoRepositoryPort() {
+            return mock(ProductoRepositoryPort.class);
+        }
 
         @Bean
         public MyUseCase myUseCase() {

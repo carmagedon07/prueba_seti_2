@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: my_api_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "1234"
+      MYSQL_DATABASE: "franquicia"
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./create-database.sql:/docker-entrypoint-initdb.d/01-create-database.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-p1234"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: my_api_app
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      MY_API_DB_HOST: "mysql"
+      MY_API_DB_PORT: "3306"
+      MY_API_DB_NAME: "franquicia"
+      MY_API_DB_USER: "root"
+      MY_API_DB_PASSWORD: "1234"
+      MY_API_PORT: "8082"
+    ports:
+      - "8082:8082"
+
+volumes:
+  mysql_data:
+
