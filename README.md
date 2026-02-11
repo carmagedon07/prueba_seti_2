@@ -141,23 +141,10 @@ Base URL (local): `http://localhost:8082`
 
 ### Sucursales
 
-<<<<<<< HEAD
-En el repositorio se incluyen colecciones listas para importar en Postman:
-
-- **Local (Docker/PC):** `setic_api_collection.postman_collection.json`
-- **Servidor en Amazon (AWS EC2):** `setic_api_collection_ec2.postman_collection.json`
-
-La colección de **AWS EC2** está preconfigurada para apuntar a un despliegue remoto usando el DNS público:
-
-- `http://ec2-54-242-195-142.compute-1.amazonaws.com:8082`
-
-Además, usa la variable `{{baseUrl}}` para que puedas cambiar fácilmente el host/puerto si el despliegue cambia (por ejemplo si luego usas un ALB, HTTPS o un dominio propio).
-=======
 - POST `/api/v1/sucursales`
 - PATCH `/api/v1/sucursales/{id}`
 
 ### Productos
->>>>>>> develop
 
 - POST `/api/v1/productos`
 - DELETE `/api/v1/productos/{id}`
@@ -165,29 +152,24 @@ Además, usa la variable `{{baseUrl}}` para que puedas cambiar fácilmente el ho
 - PATCH `/api/v1/productos/{id}`
 - GET `/api/v1/productos/max-stock/franquicia/{franquiciaId}`
 
-## Pruebas
-
-```
-./gradlew.bat test
-```
-
 ## Colecciones Postman
 
-En la raiz del proyecto encontraras las colecciones de Postman para probar los endpoints:
+En el repositorio se incluyen colecciones listas para importar en Postman:
 
-- `setic_api_collection.postman_collection.json` - Coleccion para entorno local
-- `setic_api_collection_ec2.postman_collection.json` - Coleccion para entorno EC2
+- **Local (Docker/PC):** `setic_api_collection.postman_collection.json`
+- **Servidor en Amazon (AWS EC2):** `setic_api_collection_ec2.postman_collection.json`
+
+La coleccion de **AWS EC2** esta preconfigurada para apuntar a un despliegue remoto usando el DNS publico:
+
+- `http://ec2-54-242-195-142.compute-1.amazonaws.com:8082`
+
+Ademas, usa la variable `{{baseUrl}}` para que puedas cambiar facilmente el host/puerto si el despliegue cambia (por ejemplo si luego usas un ALB, HTTPS o un dominio propio).
 
 ### Importar en Postman
 
 1. Postman → **Import**
-<<<<<<< HEAD
-2. Selecciona el archivo `.json` de la colección
-3. (Opcional) Ajusta `baseUrl` dentro de la colección si cambias de ambiente
-=======
 2. Selecciona el archivo `.json` de la coleccion
 3. (Opcional) Ajusta `baseUrl` dentro de la coleccion si cambias de ambiente
->>>>>>> develop
 4. Ejecuta las requests en el orden sugerido (crear franquicia → crear sucursal → crear producto, etc.)
 
 ### Franquicias
