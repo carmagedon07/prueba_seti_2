@@ -1,0 +1,23 @@
+##Spring Configuration
+server:
+  port: ${MY_API_PORT:8082}
+
+spring:
+  application:
+    name: api_test
+  r2dbc:
+    url: r2dbc:mysql://${MY_API_DB_HOST:localhost}:${MY_API_DB_PORT:3306}/${MY_API_DB_NAME:franquicia}?useSSL=false
+    username: ${MY_API_DB_USER:root}
+    password: ${MY_API_DB_PASSWORD:1234}
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+
+logging:
+  level:
+    root: INFO
+    co.com.bancolombia.prueba.seti.api_test: DEBUG
+    org.springframework.r2dbc: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"

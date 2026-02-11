@@ -1,14 +1,7 @@
 # syntax=docker/dockerfile:1
 
-FROM maven:3.9.9-eclipse-temurin-17 AS build
+FROM eclipse-temurin:21-jre
 WORKDIR /app
-COPY pom.xml .
-COPY src ./src
-RUN mvn -q -DskipTests package
-
-FROM eclipse-temurin:17-jre
-WORKDIR /app
-COPY --from=build /app/target/api_test-0.0.1-SNAPSHOT.jar app.jar
+COPY applications/app-service/build/libs/test_prueba_setic_2.jar app.jar
 EXPOSE 8082
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
-
